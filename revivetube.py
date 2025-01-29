@@ -171,8 +171,8 @@ def download_file():
     return send_file(
         './test.swf',
         mimetype='application/x-shockwave-flash',
-        as_attachment=True,  # Optional, wenn du die Datei als Anhang senden möchtest
-        download_name='test.swf'  # Optional, Name der Datei, die der Benutzer herunterladen wird
+        as_attachment=True,
+        download_name='test.swf'
     )
 
 
