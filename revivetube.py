@@ -216,7 +216,7 @@ def index_wiitv():
                     "thumbnail": f"/thumbnail/{entry['videoId']}",
                     "viewCount": entry.get("viewCountText", "Unbekannt"),
                     "published": entry.get("publishedText", "Unbekannt"),
-                    "duration": helper.format_duration(entry.get("lengthSeconds", 0))  # Video Dauer formatiert
+                    "duration": helper.format_duration(entry.get("lengthSeconds", 0))
                 }
                 for entry in data
                 if entry.get("videoId")
