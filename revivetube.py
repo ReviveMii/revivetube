@@ -25,7 +25,7 @@ from threading import Thread
 import requests
 import yt_dlp
 from flask import Flask, request, render_template_string, send_file, Response, abort, jsonify
-
+import json
 import helper
 
 app = Flask(__name__)
@@ -166,6 +166,16 @@ def switch_wii():
         return "Can't start DEBUG Mode.", 500
 
 
+@app.route('/test.swf')
+def download_file():
+    return send_file(
+        './test.swf',
+        mimetype='application/x-shockwave-flash',
+        as_attachment=True,  # Optional, wenn du die Datei als Anhang senden möchtest
+        download_name='test.swf'  # Optional, Name der Datei, die der Benutzer herunterladen wird
+    )
+
+
 @app.route("/switch_n", methods=["GET"])
 def switch_n():
     video_id = request.args.get("video_id")
@@ -184,13 +194,14 @@ def switch_n():
         return "Can't start DEBUG Mode.", 500
 
 
+
 @app.route("/", methods=["GET"])
-def index():
+def index_wiitv():
     query = request.args.get("query")
     results = None
 
     if query:
-        response = requests.get(f"https://y.com.sb/api/v1/search?q={query}", timeout=3)
+        response = requests.get(f"https://invidious.materialio.us/api/v1/search?q={query}", timeout=3)
         try:
             data = response.json()
         except ValueError:
@@ -214,7 +225,6 @@ def index():
             return "No Results or Error in the API.", 404
 
     return render_template_string(INDEX_TEMPLATE, results=results)
-
 
 @app.route("/watch", methods=["GET"])
 def watch():
@@ -301,7 +311,7 @@ def process_video(video_id):
             temp_video_path = os.path.join(temp_dir, f"{video_id}.%(ext)s")
             command = [
                 "yt-dlp",
-                "-f worstvideo+worstaudio",
+                "-f", "worstvideo+worstaudio",
                 "--proxy", "http://localhost:4000",
                 "-o", temp_video_path,
                 f"https://m.youtube.com/watch?v={video_id}"
