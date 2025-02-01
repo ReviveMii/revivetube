@@ -144,59 +144,13 @@ def get_video_comments(video_id, max_results=20):
         return comments
 
     except requests.exceptions.RequestException as e:
-        print(f"Fehler beim Abrufen der Kommentare: {str(e)}")
+        print(f"Can't fetch Comments: {str(e)}")
         return []
-
-
-@app.route("/switch_wii", methods=["GET"])
-def switch_wii():
-    video_id = request.args.get("video_id")
-    if not video_id:
-        return "Missing Video-ID.", 400
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Nintendo Wii; U; ; en) Opera/9.30 (Nintendo Wii)"
-    }
-
-    response = requests.get(f"http://localhost:5000/watch?video_id={video_id}", headers=headers, timeout=2)
-
-    if response.status_code == 200:
-        return response.text
-    else:
-        return "Can't start DEBUG Mode.", 500
-
-
-@app.route('/test.swf')
-def download_file():
-    return send_file(
-        './test.swf',
-        mimetype='application/x-shockwave-flash',
-        as_attachment=True,
-        download_name='test.swf'
-    )
-
-
-@app.route("/switch_n", methods=["GET"])
-def switch_n():
-    video_id = request.args.get("video_id")
-    if not video_id:
-        return "Missing Video-ID.", 400
-
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
-    }
-
-    response = requests.get(f"http://localhost:5000/watch?video_id={video_id}", headers=headers, timeout=2)
-
-    if response.status_code == 200:
-        return response.text
-    else:
-        return "Can't start DEBUG Mode.", 500
 
 
 
 @app.route("/", methods=["GET"])
-def index_wiitv():
+def index():
     query = request.args.get("query")
     results = None
 
@@ -307,14 +261,17 @@ def process_video(video_id):
 
         video_status[video_id] = {"status": "downloading"}
 
+
+
+
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_video_path = os.path.join(temp_dir, f"{video_id}.%(ext)s")
             command = [
                 "yt-dlp",
-                "-f", "worstvideo+worstaudio",
-                "--proxy", "http://localhost:4000",
                 "-o", temp_video_path,
-                f"https://m.youtube.com/watch?v={video_id}"
+                "--proxy", "http://localhost:4000",
+                "-f", "worstvideo+worstaudio",
+                f"https://youtube.com/watch?v={video_id}"
             ]
             subprocess.run(command, check=True)
 

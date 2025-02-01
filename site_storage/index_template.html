@@ -1,116 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>ReviveTube by ReviveMii</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: Arial, sans-serif;
             color: #fff;
             background-color: #181818;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #202020;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .search-container {
+            flex: 1;
             text-align: center;
         }
-        h1 {
-            color: #ff0000;
-            font-size: 28px;
-            margin-bottom: 20px;
-        }
-        p, h2 {
-            font-size: 16px;
-            margin-bottom: 10px;
-        }
         .search-bar {
-            width: 300px;
-            padding: 10px;
+            width: 400px;
+            padding: 8px;
             font-size: 16px;
             border: 1px solid #ccc;
-            border-radius: 4px;
-            display: block;
-            margin: 0 auto;
+            background-color: #121212;
+            color: #fff;
         }
-        button {
-            padding: 10px 20px;
+        .search-button {
+            padding: 8px 15px;
             font-size: 16px;
-            background-color: #333333;
+            background-color: #303030;
             color: white;
             border: none;
             cursor: pointer;
-            border-radius: 4px;
-            display: block;
-            margin: 10px auto;
+        }
+        .content {
+            padding: 20px;
+        }
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         .video-item {
-            margin-bottom: 20px;
-            text-align: center;
+            width: 320px;
+            margin: 10px;
+            background-color: #222;
+            padding: 10px;
         }
         .video-item img {
-            width: 320px;
-            height: 180px;
-            border-radius: 8px;
+            width: 100%;
         }
         .video-item-title {
-            color: #fff;
             font-weight: bold;
-            font-size: 16px;
-            text-align: center;
-        }
-        .video-item-uploader {
-            color: #ccc;
             font-size: 14px;
-            text-align: center;
-        }
-        .video-item-duration {
-            color: #ccc;
-            font-size: 14px;
-            text-align: center;
             margin-top: 5px;
         }
-        .dark-mode {
-            background-color: #181818;
-            color: #fff;
-        }
-        .dark-mode a {
-            color: #1e90ff;
+        .video-item-uploader, .video-item-duration {
+            color: #aaa;
+            font-size: 12px;
         }
     </style>
 </head>
-<body class="dark-mode" id="page-body">
-<h1>ReviveTube by ReviveMii</h1>
-<p>A YouTube App for the Wii</p>
-<form action="/" method="get">
-    <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
-    <button type="submit">Go</button>
-</form>
-{% if results %}
-<h2>Search Results</h2>
-<div>
-    {% for video in results %}
-    <div class="video-item">
-        <a href="/watch?video_id={{ video['id'] }}">
-            <img alt="{{ video['title'] }}" src="{{ video['thumbnail'] }}">
-            <div class="video-item-title">{{ video['title'] }}</div>
-            <div class="video-item-uploader">By: {{ video['uploader'] }}</div>
-            <div class="video-item-duration">Duration: {{ video['duration'] }}</div>
-        </a>
+<body>
+    <div class="header">
+        <div class="logo">ReviveTube</div>
+        <div class="search-container">
+            <form action="/" method="get">
+                <input class="search-bar" name="query" type="text">
+                <input type="submit" class="search-button" value="Search">
+            </form>
+        </div>
     </div>
-    {% endfor %}
-</div>
-{% endif %}
-<p><a href="http://revivemii.errexe.xyz" target="_blank">Visit ReviveMii</a></p>
-<p style="color: red;">\/ Scroll down \/</p>
-<p style="font-size: 12px;">We are NOT affiliated with Nintendo or YouTube. This app uses code from Wiinet.xyz. For more
-    information, scroll down to Open Source Software.</p>
-<p style="color: blue">It's recommended to bookmark this page. Some sites may take longer to load.</p>
-<a href="http://revivetube.errexe.xyz/revivetube/t-and-p.html">Terms of Service and Privacy Policy (Last Updated: 7. Dec
-    2024 12:41 CET)</a><br><br>
-<a href="https://github.com/ReviveMii/revivetube/" target="_blank">Source Code</a><br><br>
-<a href="http://revivetube.errexe.xyz/discord-redirect.html">Discord Server [Use a Compatible Device]</a>
-<p>Version: v2 Beta (Sometimes I forget to update the Version Number)</p>
-<a href="/licenses.html">Open Source Software Used in This App</a>
-<br>
-<a href="mailto:theerrorexe@gmail.com">Contact</a>
-<br>
-<a href="https://revivemii.errexe.xyz/feedback.html">Report Bugs & Feedback</a>
+    <div class="content">
+        {% if results %}
+        <h2>Search Results</h2>
+        <div class="video-grid">
+            {% for video in results %}
+            <div class="video-item">
+                <a href="/watch?video_id={{ video['id'] }}">
+                    <img alt="{{ video['title'] }}" src="{{ video['thumbnail'] }}">
+                </a>
+                <div class="video-item-title">{{ video['title'] }}</div>
+                <div class="video-item-uploader">By: {{ video['uploader'] }}</div>
+                <div class="video-item-duration">Duration: {{ video['duration'] }}</div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    </div>
+    <p style="color: red; text-align: center;">\/ Scroll down \/</p>
+    <p style="text-align: center;"><a href="http://revivemii.errexe.xyz" target="_blank">Visit the ReviveMii Project</a></p>
+    <p style="font-size: 12px; text-align: center;">We are NOT affiliated with Nintendo or YouTube.</p>
+    <p style="text-align: center;">
+        <a href="https://github.com/ReviveMii/revivetube/" target="_blank">Source Code</a> |
+        <a href="https://revivetube.errexe.xyz/discord-redirect.html">Discord Server</a> |
+        <a href="mailto:theerrorexe@gmail.com">Contact</a>
+    </p>
 </body>
 </html>

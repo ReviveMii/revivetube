@@ -6,8 +6,46 @@
     <title>Loading...</title>
     <style>
         body {
-            text-align: center;
             font-family: Arial, sans-serif;
+            background-color: #181818;
+            color: white;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #202020;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .search-container {
+            flex: 1;
+            text-align: center;
+        }
+        .search-bar {
+            width: 400px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            background-color: #121212;
+            color: #fff;
+        }
+        .search-button {
+            padding: 8px 15px;
+            font-size: 16px;
+            background-color: #303030;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .loading-section {
+            text-align: center;
+            margin-top: 20px;
         }
         #loadingGif {
             width: 50px;
@@ -24,70 +62,86 @@
             border: none;
             cursor: pointer;
         }
-       #goButton:disabled {
+        #goButton:disabled {
             background-color: gray;
             cursor: not-allowed;
+        }
+        small {
+            color: grey;
+            display: block;
+            margin-top: 20px;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-<h1>Loading</h1>
-<img alt="Loading..." id="loadingGif" src="loading.gif"/>
-<p id="progressText">Fetching Info...</p>
-<button id="goButton" onclick="startVideo()">Go</button>
-<br>
-<small style="color: grey">Loading Screen will NOT work in Dolphin Emulator.<br><br>Long Video = Longer Download and
-    Converting.<br><br>For videos longer than 7 minutes, there is a chance that they won’t play.</small>
-<script type="text/javascript">
-    var goButton = document.getElementById('goButton');
-    var loadingGif = document.getElementById('loadingGif');
-    var progressText = document.getElementById('progressText');
-    var videoId = "{{ video_id }}";
+    <div class="header">
+        <div class="logo">ReviveTube</div>
+        <div class="search-container">
+            <form action="/" method="get">
+                <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
+                <input type="submit" class="search-button" value="Search">
+            </form>
+        </div>
+    </div>
+    <div class="loading-section">
+        <h1>Loading...</h1>
+        <img alt="Loading..." id="loadingGif" src="loading.gif"/>
+        <p id="progressText">Fetching Info...</p>
+        <button id="goButton" onclick="startVideo()">Go</button>
+        <br>
+        <small>Loading Screen will NOT work in Dolphin Emulator.<br><br>Long Video = Longer Download and Converting.<br><br>For videos longer than 7 minutes, there is a chance that they won’t play.</small>
+    </div>
+    <script type="text/javascript">
+        var goButton = document.getElementById('goButton');
+        var loadingGif = document.getElementById('loadingGif');
+        var progressText = document.getElementById('progressText');
+        var videoId = "{{ video_id }}";
 
-    function simulateLoading() {
-        setInterval(checkStatus, 1000);
-    }
-
-    function checkStatus() {
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', '/status/' + videoId, true);
-        xhr.onreadystatechange = function () {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-                var response;
-                try {
-                    response = eval('(' + xhr.responseText + ')');
-                } catch (e) {
-                    response = { status: 'error' };
-                }
-                updateProgress(response);
-            }
-        };
-        xhr.send();
-    }
-
-    function updateProgress(status) {
-        if (status.status === 'complete') {
-            loadingGif.style.display = 'none';
-            progressText.innerHTML = 'Done!';
-            goButton.style.display = 'inline';
-        } else if (status.status === 'downloading') {
-            progressText.innerHTML = 'The Server is Downloading...';
-        } else if (status.status === 'converting') {
-            progressText.innerHTML = 'The Server is Converting video...';
-        } else if (status.status === 'converting for Wii') {
-            progressText.innerHTML = 'The Server is Converting for Wii...';
-        } else {
-            progressText.innerHTML = 'The Server was unable to process the video! Report the Bug in the Discord Server. <br> Error Details for Developers: {{ video_id }}_unable_1.<br>Discord Server on ReviveMii Homepage Footer';
+        function simulateLoading() {
+            setInterval(checkStatus, 1000);
         }
-    }
 
-    function startVideo() {
-        window.location.href = '/watch?video_id=' + videoId;
-    }
+        function checkStatus() {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '/status/' + videoId, true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4 && xhr.status === 200) {
+                    var response;
+                    try {
+                        response = JSON.parse(xhr.responseText);
+                    } catch (e) {
+                        response = { status: 'error' };
+                    }
+                    updateProgress(response);
+                }
+            };
+            xhr.send();
+        }
 
-    window.onload = function () {
-        simulateLoading();
-    };
-</script>
+        function updateProgress(status) {
+            if (status.status === 'complete') {
+                loadingGif.style.display = 'none';
+                progressText.innerHTML = 'Done!';
+                goButton.style.display = 'inline';
+            } else if (status.status === 'downloading') {
+                progressText.innerHTML = 'The Server is Downloading...';
+            } else if (status.status === 'converting') {
+                progressText.innerHTML = 'The Server is Converting video...';
+            } else if (status.status === 'converting for Wii') {
+                progressText.innerHTML = 'The Server is Converting for Wii...';
+            } else {
+                progressText.innerHTML = 'The Server was unable to process the video! Report the Bug in the Discord Server. <br> Error Details: Error on Video with ID: {{ video_id }}<br>Discord Server on ReviveMii Homepage Footer';
+            }
+        }
+
+        function startVideo() {
+            window.location.href = '/watch?video_id=' + videoId;
+        }
+
+        window.onload = function () {
+            simulateLoading();
+        };
+    </script>
 </body>
 </html>

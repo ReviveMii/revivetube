@@ -1,68 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta content="width=device-width, initial-scale=1.0" name="viewport">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>{{ title }}</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            text-align: center; /* Zentriert den Text */
+            font-family: Arial, sans-serif;
             color: #fff;
             background-color: #181818;
+            margin: 0;
+            padding: 0;
         }
-        .dark-mode {
-            background-color: #181818;
+        .header {
+            background-color: #202020;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            color: #ff0000;
+            font-weight: bold;
+        }
+        .search-container {
+            flex: 1;
+            text-align: center;
+        }
+        .search-bar {
+            width: 400px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            background-color: #121212;
             color: #fff;
         }
-        .dark-mode a {
-            color: #1e90ff;
+        .search-button {
+            padding: 8px 15px;
+            font-size: 16px;
+            background-color: #303030;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .content {
+            padding: 20px;
+            text-align: center;
+        }
+        .video-container {
+            background-color: #000;
+            text-align: center;
+            padding: 10px;
+        }
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .video-item {
+            width: 320px;
+            margin: 10px;
+            background-color: #222;
+            padding: 10px;
+        }
+        .video-item img {
+            width: 100%;
+        }
+        .video-item-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .video-item-uploader, .video-item-duration {
+            color: #aaa;
+            font-size: 12px;
         }
         .comments {
             margin: 0 auto;
             width: 80%;
-        }
-        h1 {
-            color: red;
-            text-align: center;
-        }
-        h3 {
-            color: white;
-            text-align: center;
+            text-align: left;
         }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
-<body class="dark-mode" id="page-body">
-<div style="width: 100%; background-color: #000; text-align: center;">
-    <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
-        <param name="wmode" value="transparent">
-        <param name="allowFullScreen" value="false">
-        <param name="flashvars" value="filename={{ video_flv }}">
-    </object>
-</div>
-<h1 style="color: red">{{ title }}</h1>
-<h3>Uploaded by: <a href="/channel?channel_id={{ channelId }}">{{ uploader }}</a></h3>
-<p><strong>Views:</strong> {{ viewCount }}</p>
-<p><strong>Likes:</strong> {{ likeCount }}</p>
-<p><strong>Upload Date:</strong> {{ publishedAt }}</p>
-<a href="#comments">Skip Description</a>
-<h3 style="color: red">Description:</h3>
-<p>{{ description | safe }}</p>
-<h3 class="comments" id="comments" style="color: red">Comments:</h3>
-<div class="comments">
-    {% if comments %}
-    {% for comment in comments %}
-    <div class="comment">
-        <p><strong>{{ comment.author }}</strong> posted:</p>
-        <p>{{ comment.text|safe }}</p>
-        <p style="color: gray; font-size: 12px;">Likes: {{ comment.likeCount }} | Post date: {{ comment.publishedAt
-            }}</p>
+<body>
+    <div class="header">
+        <div class="logo">ReviveTube</div>
+        <div class="search-container">
+            <form action="/" method="get">
+                <input class="search-bar" name="query" type="text">
+                <input type="submit" class="search-button" value="Search">
+            </form>
+        </div>
     </div>
-    {% endfor %}
-    {% else %}
-    <p>No Comments.</p>
-    {% endif %}
-</div>
+    <div class="content">
+        <div class="video-container">
+            <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
+                <param name="wmode" value="transparent">
+                <param name="allowFullScreen" value="false">
+                <param name="flashvars" value="filename={{ video_flv }}">
+            </object>
+        </div>
+        <h1 style="color: red">{{ title }}</h1>
+        <h3>Uploaded by: <a href="/channel?channel_id={{ channelId }}">{{ uploader }}</a></h3>
+        <p><strong>Views:</strong> {{ viewCount }}</p>
+        <p><strong>Likes:</strong> {{ likeCount }}</p>
+        <p><strong>Upload Date:</strong> {{ publishedAt }}</p>
+        <a href="#comments">Skip Description</a>
+        <h3 style="color: red">Description:</h3>
+        <p>{{ description | safe }}</p>
+        <h3 class="comments" id="comments" style="color: red">Comments:</h3>
+        <div class="comments">
+            {% if comments %}
+            {% for comment in comments %}
+            <div class="comment">
+                <p><strong>{{ comment.author }}</strong> posted:</p>
+                <p>{{ comment.text|safe }}</p>
+                <p style="color: gray; font-size: 12px;">Likes: {{ comment.likeCount }} | Post date: {{ comment.publishedAt }}</p>
+            </div>
+            {% endfor %}
+            {% else %}
+            <p>No Comments.</p>
+            {% endif %}
+        </div>
+    </div>
 </body>
 </html>
