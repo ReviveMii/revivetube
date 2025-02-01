@@ -14,20 +14,22 @@
         .header {
             background-color: #202020;
             padding: 10px 20px;
-            display: flex;
-            align-items: center;
+            clear: both;
         }
         .logo {
             font-size: 24px;
             color: #ff0000;
             font-weight: bold;
+            float: left;
         }
         .search-container {
-            flex: 1;
+            float: right;
+            width: 50%;
             text-align: center;
         }
         .search-bar {
-            width: 400px;
+            width: 100%;
+            max-width: 400px;
             padding: 8px;
             font-size: 16px;
             border: 1px solid #ccc;
@@ -44,20 +46,25 @@
         }
         .content {
             padding: 20px;
+            clear: both;
         }
         .video-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            display: block;
+            text-align: center;
         }
         .video-item {
             width: 320px;
             margin: 10px;
             background-color: #222;
             padding: 10px;
+            display: inline-block;
+            text-align: left;
+            vertical-align: top;
+            box-sizing: border-box;
         }
         .video-item img {
             width: 100%;
+            height: auto;
         }
         .video-item-title {
             font-weight: bold;
@@ -75,7 +82,7 @@
         <div class="logo">ReviveTube</div>
         <div class="search-container">
             <form action="/" method="get">
-                <input class="search-bar" name="query" type="text">
+                <input class="search-bar" name="query" type="text" placeholder="Search...">
                 <input type="submit" class="search-button" value="Search">
             </form>
         </div>
