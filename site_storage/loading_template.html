@@ -102,22 +102,23 @@
             setInterval(checkStatus, 1000);
         }
 
+
         function checkStatus() {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '/status/' + videoId, true);
-            xhr.onreadystatechange = function () {
-                if (xhr.readyState === 4 && xhr.status === 200) {
-                    var response;
-                    try {
-                        response = JSON.parse(xhr.responseText);
-                    } catch (e) {
-                        response = { status: 'error' };
-                    }
-                    updateProgress(response);
+        var xhr = new XMLHttpRequest();
+        xhr.open('GET', '/status/' + videoId, true);
+        xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+                var response;
+                try {
+                    response = eval('(' + xhr.responseText + ')');
+                } catch (e) {
+                    response = { status: 'error' };
                 }
-            };
-            xhr.send();
-        }
+                updateProgress(response);
+            }
+        };
+        xhr.send();
+    }
 
         function updateProgress(status) {
             if (status.status === 'complete') {
