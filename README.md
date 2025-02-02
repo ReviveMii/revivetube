@@ -4,7 +4,7 @@ Watch YouTube on your Wii!
 
 ReviveTube: http://yt.old.errexe.xyz/
 
-ReviveMii Homepage: https://revivemii.errexe.xyz
+ReviveMii Homepage: https://revivemii.errexe.xyz/
 
 # Self Hosting
 

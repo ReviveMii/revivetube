@@ -47,7 +47,6 @@ def start_folder_check():
 
 
 VIDEO_FOLDER = "sigma/videos"
-API_BASE_URL = "https://y.com.sb/api/v1/"
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 video_status = {}
 
@@ -71,24 +70,8 @@ def get_folder_size(path):
     return total_size
 
 
-"""
-[UNUSED IN THE CURRENT VERSION]
-
-def delete_videos_periodically():
-    while True:
-        time.sleep(86400)  
-        for filename in os.listdir(VIDEO_FOLDER):
-            file_path = os.path.join(VIDEO_FOLDER, filename)
-            if os.path.isfile(file_path):
-                os.remove(file_path)
-                print(f"Deleted: {file_path}")
-
-threading.Thread(target=delete_videos_periodically, daemon=True).start()
-"""
 
 INDEX_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}index_template.html")
-
-WATCH_STANDARD_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}watch_standard_template.html")
 
 WATCH_WII_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}watch_wii_template.html")
 
@@ -217,7 +200,7 @@ def watch():
         if video_duration > 420:
             alert_script = """
             <script type="text/javascript">
-                alert("This Video is long. There is a chance that the Wii will not play the Video. Try a Video under 7 minutes or something like that.");
+                alert("This Video is long. There is a chance that the Wii will not play the Video. Try a Video under 5 minutes.");
             </script>
             """
 
@@ -350,7 +333,7 @@ def video_metadata(video_id):
         data = response.json()
 
         if "items" not in data or len(data["items"]) == 0:
-            return f"Video mit ID {video_id} wurde nicht gefunden.", 404
+            return f"The Video with ID {video_id} was not found.", 404
 
         video_data = data["items"][0]
         title = video_data["snippet"]["title"]
@@ -374,7 +357,7 @@ def video_metadata(video_id):
         }
 
     except requests.exceptions.RequestException as e:
-        return f"Fehler bei der API-Anfrage: {str(e)}", 500
+        return f"API Error: {str(e)}", 500
 
 
 @app.route("/<path:filename>")
