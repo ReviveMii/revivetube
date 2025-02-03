@@ -278,7 +278,7 @@ def process_video(video_id):
                         "-c:a", "aac",
                         "-strict", "experimental",
                         "-preset", "ultrafast",
-                        "b:a", "64k",
+                        "-b:a", "64k",
                         "-movflags", "+faststart",
                         "-vf", "scale=854:480",
                         video_mp4_path
