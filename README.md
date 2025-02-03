@@ -20,6 +20,8 @@ pip install -r requirements.txt
 ```
 Search for "--proxy" in revivetube.py and remove the command
 
+Search for "--cookies" in revivetube.py and remove the command
+
 Start the Server:
 ```bash
 python3 revivetube.py
