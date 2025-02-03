@@ -252,6 +252,7 @@ def process_video(video_id):
             command = [
                 "yt-dlp",
                 "-o", temp_video_path,
+                "--cookies", "cookies.txt",
                 "--proxy", "http://localhost:4000",
                 "-f", "worstvideo+worstaudio",
                 f"https://youtube.com/watch?v={video_id}"

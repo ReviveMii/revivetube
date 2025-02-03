@@ -8,7 +8,7 @@ ReviveMii Homepage: https://revivemii.errexe.xyz/
 
 # Self Hosting
 
-WARNING: before starting the server, remove the --proxy command in revivetube.py
+WARNING: before starting the server, remove the --proxy command and the --cookie command in revivetube.py
 
 Go to https://console.cloud.google.com/ and create a new application with the YouTube Data v3 API.
 
