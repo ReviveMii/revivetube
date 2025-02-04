@@ -67,14 +67,23 @@
             margin: 20px auto;
         }
         #goButton {
-            display: none;
+            display: block;
             margin-top: 20px;
             padding: 10px 20px;
             font-size: 16px;
-            background-color: #4caf50;
+            background-color: #268ee9;
+            border:none;
             color: white;
-            border: none;
             cursor: pointer;
+        }
+        #goButton:hover {
+            background-color: #087be0;
+            border:none;
+
+        }
+        #goButton:active {
+            background-color: #42a7ff;
+            border:none;
         }
         #goButton:disabled {
             background-color: gray;
@@ -105,7 +114,7 @@
         <p id="progressText">Fetching Info...</p>
         <button id="goButton" onclick="startVideo()">Go</button>
         <br>
-        <small>Loading Screen will NOT work in Dolphin Emulator.<br><br>Long Video = Longer Download and Converting.<br><br>Videos over 5 minutes will not play.</small>
+        <small>Loading Screen will <b>NOT</b> work in Dolphin Emulator.<br><br>Long Video = Longer Download and Converting.<br><br>Videos over 5 minutes will not play.</small>
     </div>
     <script type="text/javascript">
         var goButton = document.getElementById('goButton');
