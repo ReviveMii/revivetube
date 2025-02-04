@@ -5,22 +5,30 @@
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
     <title>Loading...</title>
     <style>
+      a {
+            color: #3ea6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #46bbff;
+        }
         body {
             font-family: Arial, sans-serif;
-            background-color: #181818;
-            color: white;
+            color: #fff;
+            background-color: #0f0f0f;
             margin: 0;
             padding: 0;
         }
         .header {
             background-color: #202020;
+            border-bottom:2px solid #2c2c2c;
             padding: 10px 20px;
             display: flex;
             align-items: center;
         }
         .logo {
             font-size: 24px;
-            color: #ff0000;
+            color: #fe0000;
             font-weight: bold;
         }
         .search-container {
@@ -31,17 +39,23 @@
             width: 400px;
             padding: 8px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            border: 1px solid #313131;
             background-color: #121212;
             color: #fff;
+        }
+        .search-bar:hover {
+            border: 1px solid #268ee9;
         }
         .search-button {
             padding: 8px 15px;
             font-size: 16px;
-            background-color: #303030;
+            background-color: #222222;
+            border:1px solid #3d3d3d;
             color: white;
-            border: none;
             cursor: pointer;
+        }
+        .search-button:hover {
+            border: 1px solid #268ee9;
         }
         .loading-section {
             text-align: center;
@@ -76,7 +90,8 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">ReviveTube</div>
+        <div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
+            ReviveTube</span></div>
         <div class="search-container">
             <form action="/" method="get">
                 <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
