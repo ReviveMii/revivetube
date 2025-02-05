@@ -4,22 +4,30 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>{{ title }}</title>
     <style>
+        a {
+            color: #3ea6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #46bbff;
+        }
         body {
             font-family: Arial, sans-serif;
             color: #fff;
-            background-color: #181818;
+            background-color: #0f0f0f;
             margin: 0;
             padding: 0;
         }
         .header {
             background-color: #202020;
+            border-bottom:2px solid #2c2c2c;
             padding: 10px 20px;
             display: flex;
             align-items: center;
         }
         .logo {
             font-size: 24px;
-            color: #ff0000;
+            color: #fe0000;
             font-weight: bold;
         }
         .search-container {
@@ -30,26 +38,49 @@
             width: 400px;
             padding: 8px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            border: 1px solid #313131;
             background-color: #121212;
             color: #fff;
+        }
+        .search-bar:hover {
+            border: 1px solid #268ee9;
         }
         .search-button {
             padding: 8px 15px;
             font-size: 16px;
-            background-color: #303030;
+            background-color: #222222;
+            border:1px solid #3d3d3d;
             color: white;
-            border: none;
             cursor: pointer;
+        }
+        .search-button:hover {
+            border: 1px solid #268ee9;
         }
         .content {
             padding: 20px;
             text-align: center;
         }
+        #videooutline {
+            width:fit-content;
+            margin:auto;
+            border-bottom:6px solid #181818;
+            border-right:6px solid #181818;
+        }
+        #videooutline:hover {
+            width:fit-content;
+            margin:auto;
+            border-bottom:6px solid #111111;
+            border-right:6px solid #111111;
+        }
         .video-container {
-            background-color: #000;
+            background-color: #131313;
+            border:1px solid #525252;
             text-align: center;
             padding: 10px;
+            width:fit-content;
+        }
+        .video-container:hover {
+            border:1px solid #0f0f0f;
         }
         .video-grid {
             display: flex;
@@ -79,37 +110,66 @@
             width: 80%;
             text-align: left;
         }
+        h1,h3 {
+            color: #ff002b
+        }
+        .dataname {
+            color:#c4c4c4;
+        }
+        hr {
+            border-top:1px solid #e91d1d;
+            border-bottom:1px solid #e91d1d;
+            border-left:1px solid #ff2e2e;
+            border-right:1px solid #ff2e2e;
+            max-width:580px;
+            margin-left:auto;
+            margin-right:auto;
+            margin-top:8px;
+            margin-bottom:8px;
+        }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
     <div class="header">
-        <div class="logo">ReviveTube</div>
+        <div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
+            ReviveTube</span></div>
         <div class="search-container">
             <form action="/" method="get">
-                <input class="search-bar" name="query" type="text">
+                <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
                 <input type="submit" class="search-button" value="Search">
             </form>
         </div>
     </div>
     <div class="content">
-        <div class="video-container">
-            <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
-                <param name="wmode" value="transparent">
-                <param name="allowFullScreen" value="false">
-                <param name="flashvars" value="filename={{ video_flv }}">
-            </object>
-        </div>
-        <h1 style="color: red">{{ title }}</h1>
-        <h3>Uploaded by: <a href="/channel?channel_id={{ channelId }}">{{ uploader }}</a></h3>
-        <p><strong>Views:</strong> {{ viewCount }}</p>
-        <p><strong>Likes:</strong> {{ likeCount }}</p>
-        <p><strong>Upload Date:</strong> {{ publishedAt }}</p>
+<div id="videooutline">
+    <div class="video-container">
+        <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
+            <param name="wmode" value="transparent">
+            <param name="allowFullScreen" value="false">
+            <param name="flashvars" value="filename={{ video_flv }}">
+        </object>
+    </div>
+</div>
+        <h1 style="color:#FFF;">
+            {{ title }}</h1>
+            <hr>
+        <h3 class="dataname">Uploader: <a href="/channel?channel_id={{ channelId }}">
+            {{ uploader }}</a></h3>
+        <p><strong class="dataname">Views:</strong> <b style="color:#FFF;">
+            {{ viewCount }}</b></p>
+        <p><strong class="dataname">Likes:</strong> <b style="color:#FFF;">
+            {{ likeCount }}</b></p>
+        <p><strong class="dataname">Upload Date:</strong> <b style="color:#FFF;">
+            {{ publishedAt }}</b></p>
         <a href="#comments">Skip Description</a>
-        <h3 style="color: red">Description:</h3>
-        <p>{{ description | safe }}</p>
-        <h3 class="comments" id="comments" style="color: red">Comments:</h3>
-        <div class="comments">
+        <h3>Description:</h3>
+        <p>
+            {{ description | safe }}</p>
+            <hr>
+        <h3 class="comments" id="comments" style=" padding-top:3px; padding-bottom:8px; text-align:center">
+            Comments:</h3>
+        <div class="comments" style="text-align:center">
             {% if comments %}
             {% for comment in comments %}
             <div class="comment">
@@ -123,5 +183,7 @@
             {% endif %}
         </div>
     </div>
+
+    <hr>
 </body>
 </html>

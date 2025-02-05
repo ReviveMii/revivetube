@@ -4,6 +4,14 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <title>ReviveTube - A YouTube App for the Wii</title>
     <style>
+              a {
+            color: #3ea6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #46bbff;
+            text-decoration: underline;
+        }
         body {
             font-family: Arial, sans-serif;
             color: #fff;
@@ -13,13 +21,14 @@
         }
         .header {
             background-color: #202020;
+            border-bottom:2px solid #2c2c2c;
             padding: 10px 20px;
             display: flex;
             align-items: center;
         }
         .logo {
             font-size: 24px;
-            color: #ff0000;
+            color: #fe0000;
             font-weight: bold;
         }
         .search-container {
@@ -30,17 +39,23 @@
             width: 400px;
             padding: 8px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            border: 1px solid #313131;
             background-color: #121212;
             color: #fff;
+        }
+        .search-bar:hover {
+            border: 1px solid #268ee9;
         }
         .search-button {
             padding: 8px 15px;
             font-size: 16px;
-            background-color: #303030;
+            background-color: #222222;
+            border:1px solid #3d3d3d;
             color: white;
-            border: none;
             cursor: pointer;
+        }
+        .search-button:hover {
+            border: 1px solid #268ee9;
         }
         .content {
             padding: 20px;
@@ -72,10 +87,11 @@
 </head>
 <body>
     <div class="header">
-        <div class="logo">ReviveTube</div>
+        <div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
+            ReviveTube</span></div>
         <div class="search-container">
             <form action="/" method="get">
-                <input class="search-bar" name="query" type="text">
+                <input class="search-bar" placeholder="Search YouTube" name="query" type="text">
                 <input type="submit" class="search-button" value="Search">
             </form>
         </div>
