@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <title>ReviveTube - A YouTube App for the Wii</title>
+    <style>
+              a {
+            color: #3ea6ff;
+            text-decoration: none;
+        }
+        a:hover {
+            color: #46bbff;
+            text-decoration: underline;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            color: #fff;
+            background-color: #181818;
+            margin: 0;
+            padding: 0;
+        }
+        .header {
+            background-color: #202020;
+            border-bottom:2px solid #2c2c2c;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+        }
+        .logo {
+            font-size: 24px;
+            color: #fe0000;
+            font-weight: bold;
+        }
+        .search-container {
+            flex: 1;
+            text-align: center;
+        }
+        .search-bar {
+            width: 400px;
+            padding: 8px;
+            font-size: 16px;
+            border: 1px solid #313131;
+            background-color: #121212;
+            color: #fff;
+        }
+        .search-bar:hover {
+            border: 1px solid #268ee9;
+        }
+        .search-button {
+            padding: 8px 15px;
+            font-size: 16px;
+            background-color: #222222;
+            border:1px solid #3d3d3d;
+            color: white;
+            cursor: pointer;
+        }
+        .search-button:hover {
+            border: 1px solid #268ee9;
+        }
+        .content {
+            padding: 20px;
+        }
+        .video-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .video-item {
+            width: 320px;
+            margin: 10px;
+            background-color: #222;
+            padding: 10px;
+        }
+        .video-item img {
+            width: 100%;
+        }
+        .video-item-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-top: 5px;
+        }
+        .video-item-uploader, .video-item-duration {
+            color: #aaa;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
+            ReviveTube</span></div>
+        <div class="search-container">
+            <form action="/" method="get">
+                <input class="search-bar" placeholder="Search YouTube" name="query" type="text">
+                <input type="submit" class="search-button" value="Search">
+            </form>
+        </div>
+    </div>
+    <div class="content">
+        <h1>Credits:</h1>
+      <p>TheErrorExe (Developer)</p>
+      <p>Chrisplayz (Credits for the Redesign)</p>
+      <p>rmilooo (Credits for the Code Cleanup)</p>
+    </div>
+    </div>
+    <p style="color: red; text-align: center;">ReviveTube - A YouTube App for the Wii</p>
+    <p style="text-align: center;"><a href="http://revivemii.xyz" target="_blank">Visit the ReviveMii Project</a></p>
+    <p style="font-size: 12px; text-align: center;">We are NOT affiliated with Nintendo or YouTube.</p>
+    <p style="text-align: center;">
+        <a href="https://github.com/ReviveMii/revivetube/" target="_blank">Source Code</a> |
+        <a href="https://revivemii.errexe.xyz/discord-redirect.html">Discord Server</a> |
+        <a href="mailto:theerrorexe@gmail.com">Contact</a> | 
+              <a href="/site_storage/credits.html">Credits</a>
+    </p>
+</body>
+</html>
