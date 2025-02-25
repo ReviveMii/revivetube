@@ -1,3 +1,4 @@
 Flask
 Requests
 yt_dlp
+bs4

@@ -99,17 +99,21 @@
     <div class="content">
         {% if results %}
         <div class="video-grid">
-            {% for video in results %}
-            <div class="video-item">
-                <a href="/watch?video_id={{ video['id'] }}">
-                    <img alt="{{ video['title'] }}" src="{{ video['thumbnail'] }}">
-                </a>
-                <div class="video-item-title">{{ video['title'] }}</div>
-                <div class="video-item-uploader">By: {{ video['uploader'] }}</div>
-                <div class="video-item-duration">Duration: {{ video['duration'] }}</div>
-            </div>
+            {% for result in results %}
+                <div class="video-item">
+                    <a href="{% if result.type == 'video' %}/watch?video_id={{ result.id }}{% else %}/channel?channel_id={{ result.id }}{% endif %}">
+                        <img alt="{{ result.title }}" src="{{ result.thumbnail }}">
+                    </a>
+                    <div class="video-item-title">{{ result.title }}</div>
+                    {% if result.type == 'video' %}
+                        <div class="video-item-uploader">By: {{ result.uploader }}</div>
+                        <div class="video-item-duration">Duration: {{ result.duration }}</div>
+                    {% else %}
+                        <div class="video-item-uploader">Subscribers: {{ result.subCount }}</div>
+                    {% endif %}
+                </div>
             {% endfor %}
-        </div>
+        </div>        
         {% endif %}
     </div>
     <p style="color: red; text-align: center;">ReviveTube - A YouTube App for the Wii</p>

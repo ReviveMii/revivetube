@@ -22,6 +22,8 @@ import threading
 import time
 from threading import Thread
 
+from bs4 import BeautifulSoup
+
 import requests
 import yt_dlp
 from flask import Flask, request, render_template_string, send_file, Response, abort, jsonify
@@ -53,6 +55,8 @@ video_status = {}
 FILE_SEPARATOR = os.sep
 
 LOADING_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}loading_template.html")
+CHANNEL_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}channel_template.html")
+SEARCH_TEMPLATE = helper.read_file(f"site_storage{FILE_SEPARATOR}search_template.html")
 
 
 os.makedirs(VIDEO_FOLDER, exist_ok=True)
@@ -139,29 +143,59 @@ def index():
 
     if query:
         response = requests.get(f"https://invidious.materialio.us/api/v1/search?q={query}", timeout=3)
-        try:
-            data = response.json()
-        except ValueError:
-            return "Can't parse Data. If this Issue persist, report it in the Discord Server.", 500
+    else:
+        response = requests.get("https://invidious.materialio.us/api/v1/trending", timeout=3)
 
-        if response.status_code == 200 and isinstance(data, list):
+    try:
+        data = response.json()
+    except ValueError:
+        return "Can't parse Data. If this Issue persists, report it in the Discord Server.", 500
+
+    if response.status_code == 200 and isinstance(data, list):
+        if query:
+            results = []
+            for entry in data:
+                if entry.get("type") == "video":
+                    results.append({
+                        "type": "video",
+                        "id": entry.get("videoId"),
+                        "title": entry.get("title"),
+                        "uploader": entry.get("author", "Unknown"),
+                        "thumbnail": f"/thumbnail/{entry['videoId']}",
+                        "viewCount": entry.get("viewCountText", "Unknown"),
+                        "published": entry.get("publishedText", "Unknown"),
+                        "duration": helper.format_duration(entry.get("lengthSeconds", 0))
+                    })
+                elif entry.get("type") == "channel":
+                    results.append({
+                        "type": "channel",
+                        "id": entry.get("authorId"),
+                        "title": entry.get("author"),
+                        "thumbnail": entry.get("authorThumbnails")[-1]["url"] if entry.get("authorThumbnails") else "/static/default_channel_thumbnail.jpg",
+                        "subCount": entry.get("subCount", "Unknown"),
+                        "videoCount": entry.get("videoCount", "Unknown")
+                    })
+            return render_template_string(SEARCH_TEMPLATE, results=results)
+        else:
             results = [
                 {
                     "id": entry.get("videoId"),
                     "title": entry.get("title"),
-                    "uploader": entry.get("author", "Unbekannt"),
+                    "uploader": entry.get("author", "Unknown"),
                     "thumbnail": f"/thumbnail/{entry['videoId']}",
-                    "viewCount": entry.get("viewCountText", "Unbekannt"),
-                    "published": entry.get("publishedText", "Unbekannt"),
+                    "viewCount": entry.get("viewCountText", "Unknown"),
+                    "published": entry.get("publishedText", "Unknown"),
                     "duration": helper.format_duration(entry.get("lengthSeconds", 0))
                 }
                 for entry in data
                 if entry.get("videoId")
             ]
-        else:
-            return "No Results or Error in the API.", 404
+            return render_template_string(INDEX_TEMPLATE, results=results)
+    else:
+        return "No Results or Error in the API.", 404
 
-    return render_template_string(INDEX_TEMPLATE, results=results)
+
+
 
 @app.route("/watch", methods=["GET"])
 def watch():
@@ -397,6 +431,7 @@ def serve_video(filename):
     return send_file(file_path)
 
 
+
 @app.route('/channel', methods=['GET'])
 def channel_m():
     channel_id = request.args.get('channel_id', None)
@@ -418,21 +453,47 @@ def channel_m():
             if 'entries' not in info:
                 return "No videos found.", 404
 
-            results = [
-                {
-                    'id': video['id'],
-                    'duration': 'Duration not available on Channel View',
-                    'title': video['title'],
-                    'uploader': info.get('uploader', 'Unknown'),
-                    'thumbnail': f"http://yt.old.errexe.xyz/thumbnail/{video['id']}"
-                }
-                for video in info['entries']
-            ]
+            channel_name = info.get('uploader', 'Unknown')
 
-            return render_template_string(INDEX_TEMPLATE, results=results)
+        invidious_url = f"https://invidious.materialio.us/channel/{channel_id}"
+        response = requests.get(invidious_url, timeout=10)
+
+        if response.status_code != 200:
+            return "Failed to fetch channel page.", 500
+
+        soup = BeautifulSoup(response.text, "html.parser")
+        profile_div = soup.find(class_="channel-profile")
+
+        if profile_div:
+            img_tag = profile_div.find("img")
+            if img_tag and "src" in img_tag.attrs:
+                channel_picture = "http://api.allorigins.win/raw?url=http://invidious.materialio.us" + img_tag["src"]
+            else:
+                channel_picture = ""
+        else:
+            channel_picture = ""
+
+        results = [
+            {
+                'id': video['id'],
+                'duration': 'Duration not available on Channel View',
+                'title': video['title'],
+                'uploader': channel_name,
+                'thumbnail': f"http://yt.old.errexe.xyz/thumbnail/{video['id']}"
+            }
+            for video in info['entries']
+        ]
+
+        return render_template_string(
+            CHANNEL_TEMPLATE,
+            results=results,
+            channel_name=channel_name,
+            channel_picture=channel_picture
+        )
 
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
+
 
 
 if __name__ == "__main__":
