@@ -146,6 +146,7 @@
         <div class="container">
             <h1 class="video-title">{{ title }}</h1>
             <div class="video-meta">{{ viewCount }} Views • {{ publishedAt }}</div>
+            <br>
             <div class="channel-info">
                 <img src="{{ channel_logo_url }}" alt="Channel Logo" class="channel-logo">
                 <div>
@@ -153,11 +154,12 @@
                     <div class="subscriber-count">{{ subscriberCount }} Subscribers</div>
                 </div>
             </div>
+            <br>
             <div class="like-container">
                 <p style="display: inline;">👍</p>
                 <span>{{ likeCount }}</span>
-            </div>
-            <div class="comments-section">
+            </div><br>
+                <div class="comments-section">
                 <h2>Comments ({{ commentCount }})</h2>
                 {% if comments %}
                     {% for comment in comments %}
