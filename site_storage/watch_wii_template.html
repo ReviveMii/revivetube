@@ -24,6 +24,7 @@
             padding: 10px 20px;
             display: flex;
             align-items: center;
+            justify-content: center;
         }
         .logo {
             font-size: 24px;
@@ -71,6 +72,7 @@
             display: flex;
             align-items: center;
             gap: 10px;
+            justify-content: center;
         }
         .channel-logo {
             width: 36px;
@@ -97,6 +99,26 @@
         .video-container:hover {
             border: 1px solid #0f0f0f;
         }
+        .comments-section {
+            margin-top: 20px;
+        }
+        .comment {
+            background-color: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        .comment-author {
+            font-weight: bold;
+            color: #3ea6ff;
+        }
+        .comment-text {
+            margin-top: 5px;
+        }
+        .comment-likes {
+            font-size: 12px;
+            color: #aaa;
+        }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
@@ -106,12 +128,6 @@
             <img src="../favicon.ico" alt="Logo">
             <span>ReviveTube</span>
         </a>
-        <div class="search-container">
-            <form action="/" method="get">
-                <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
-                <input type="submit" class="search-button" value="Search">
-            </form>
-        </div>
     </div>
     <div class="content">
         <div id="videooutline">
