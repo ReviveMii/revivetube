@@ -239,18 +239,16 @@ def watch():
         if channel_response.status_code == 200:
             channel_data = channel_response.json()
 
-            # Abonnentenanzahl extrahieren
             for stat in channel_data.get("statistics", []):
                 for count in stat.get("counts", []):
                     if count.get("value") == "subscribers":
                         subscriber_count = count.get("count", "Unbekannt")
                         break
 
-            # Profilbild (PFP) extrahieren
             for stat in channel_data.get("statistics", []):
                 for user_info in stat.get("user", []):
                     if user_info.get("value") == "pfp":
-                        channel_logo_url = user_info.get("count", "")
+                        channel_logo_url = user_info.get("count", "").replace("https://", "http://")
                         break
     except Exception as e:
         print(f"SuperPlayCounts API Error: {str(e)}")
