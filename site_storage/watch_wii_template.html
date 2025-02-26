@@ -20,7 +20,7 @@
         }
         .header {
             background-color: #202020;
-            border-bottom:2px solid #2c2c2c;
+            border-bottom: 2px solid #2c2c2c;
             padding: 10px 20px;
             display: flex;
             align-items: center;
@@ -29,6 +29,13 @@
             font-size: 24px;
             color: #fe0000;
             font-weight: bold;
+            display: flex;
+            align-items: center;
+        }
+        .logo img {
+            width: 24px;
+            height: 24px;
+            margin-right: 8px;
         }
         .search-container {
             flex: 1;
@@ -49,7 +56,7 @@
             padding: 8px 15px;
             font-size: 16px;
             background-color: #222222;
-            border:1px solid #3d3d3d;
+            border: 1px solid #3d3d3d;
             color: white;
             cursor: pointer;
         }
@@ -60,34 +67,44 @@
             padding: 20px;
             text-align: center;
         }
+        .channel-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .channel-logo {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+        }
         #videooutline {
-            width:fit-content;
-            margin:auto;
-            border-bottom:6px solid #181818;
-            border-right:6px solid #181818;
+            width: fit-content;
+            margin: auto;
+            border-bottom: 6px solid #181818;
+            border-right: 6px solid #181818;
         }
         #videooutline:hover {
-            border-bottom:6px solid #111111;
-            border-right:6px solid #111111;
+            border-bottom: 6px solid #111111;
+            border-right: 6px solid #111111;
         }
         .video-container {
             background-color: #131313;
-            border:1px solid #525252;
+            border: 1px solid #525252;
             text-align: center;
             padding: 10px;
-            width:fit-content;
+            width: fit-content;
         }
         .video-container:hover {
-            border:1px solid #0f0f0f;
+            border: 1px solid #0f0f0f;
         }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
     <div class="header">
-        <a href="/" style="text-decoration: none;"><div class="logo"><img src="../favicon.ico" style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;">
-            <span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">ReviveTube</span>
-        </div>
+        <a href="/" class="logo">
+            <img src="../favicon.ico" alt="Logo">
+            <span>ReviveTube</span>
         </a>
         <div class="search-container">
             <form action="/" method="get">
@@ -135,5 +152,6 @@
                 {% endif %}
             </div>
         </div>
+    </div>
 </body>
 </html>
