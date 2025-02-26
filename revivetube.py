@@ -196,7 +196,6 @@ def index():
 
 
 
-
 @app.route("/watch", methods=["GET"])
 def watch():
     video_id = request.args.get("video_id")
@@ -213,6 +212,7 @@ def watch():
     is_wii = "wii" in user_agent and "wiiu" not in user_agent
 
     try:
+        # Metadaten des Videos abrufen
         response = requests.get(f"http://localhost:5000/video_metadata/{video_id}", timeout=20)
         if response.status_code == 200:
             metadata = response.json()
@@ -221,12 +221,42 @@ def watch():
     except requests.exceptions.RequestException as e:
         return f"Can't connect to Metadata-API: {str(e)}", 500
 
+    # Kommentare des Videos abrufen
     comments = []
     try:
         comments = get_video_comments(video_id)
     except Exception as e:
         print(f"Video-Comments Error: {str(e)}")
         comments = []
+
+    # Kanal-Logo und Abonnentenanzahl über die SuperPlayCounts API abrufen
+    channel_logo_url = ""
+    subscriber_count = "Unbekannt"
+    try:
+        channel_id = metadata['channelId']
+        api_url = f"https://api-superplaycounts.onrender.com/api/youtube-channel-counter/user/{channel_id}"
+        channel_response = requests.get(api_url, timeout=5)
+        if channel_response.status_code == 200:
+            channel_data = channel_response.json()
+
+            # Abonnentenanzahl extrahieren
+            for stat in channel_data.get("statistics", []):
+                for count in stat.get("counts", []):
+                    if count.get("value") == "subscribers":
+                        subscriber_count = count.get("count", "Unbekannt")
+                        break
+
+            # Profilbild (PFP) extrahieren
+            for stat in channel_data.get("statistics", []):
+                for user_info in stat.get("user", []):
+                    if user_info.get("value") == "pfp":
+                        channel_logo_url = user_info.get("count", "")
+                        break
+    except Exception as e:
+        print(f"SuperPlayCounts API Error: {str(e)}")
+
+    # Anzahl der Kommentare
+    comment_count = len(comments)
 
     if os.path.exists(video_mp4_path):
         video_duration = helper.get_video_duration_from_file(video_flv_path)
@@ -248,6 +278,9 @@ def watch():
                                           likeCount=metadata['likeCount'],
                                           publishedAt=metadata['publishedAt'],
                                           comments=comments,
+                                          commentCount=comment_count,
+                                          channel_logo_url=channel_logo_url,
+                                          subscriberCount=subscriber_count,
                                           video_id=video_id,
                                           video_flv=f"/sigma/videos/{video_id}.flv",
                                           alert_message="")
@@ -261,6 +294,9 @@ def watch():
                                       likeCount=metadata['likeCount'],
                                       publishedAt=metadata['publishedAt'],
                                       comments=comments,
+                                      commentCount=comment_count,
+                                      channel_logo_url=channel_logo_url,
+                                      subscriberCount=subscriber_count,
                                       video_id=video_id,
                                       video_flv=f"/sigma/videos/{video_id}.flv",
                                       alert_message="")
@@ -287,7 +323,7 @@ def process_video(video_id):
                 "yt-dlp",
                 "-o", temp_video_path,
                 "--cookies", "cookies.txt",
-                "--proxy", "http://localhost:4000",
+                "--proxy", "http://localhost:4000",                
                 "-f", "worstvideo+worstaudio",
                 f"https://youtube.com/watch?v={video_id}"
             ]

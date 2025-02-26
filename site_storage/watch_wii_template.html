@@ -67,8 +67,6 @@
             border-right:6px solid #181818;
         }
         #videooutline:hover {
-            width:fit-content;
-            margin:auto;
             border-bottom:6px solid #111111;
             border-right:6px solid #111111;
         }
@@ -82,58 +80,15 @@
         .video-container:hover {
             border:1px solid #0f0f0f;
         }
-        .video-grid {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        .video-item {
-            width: 320px;
-            margin: 10px;
-            background-color: #222;
-            padding: 10px;
-        }
-        .video-item img {
-            width: 100%;
-        }
-        .video-item-title {
-            font-weight: bold;
-            font-size: 14px;
-            margin-top: 5px;
-        }
-        .video-item-uploader, .video-item-duration {
-            color: #aaa;
-            font-size: 12px;
-        }
-        .comments {
-            margin: 0 auto;
-            width: 80%;
-            text-align: left;
-        }
-        h1,h3 {
-            color: #ff002b
-        }
-        .dataname {
-            color:#c4c4c4;
-        }
-        hr {
-            border-top:1px solid #e91d1d;
-            border-bottom:1px solid #e91d1d;
-            border-left:1px solid #ff2e2e;
-            border-right:1px solid #ff2e2e;
-            max-width:580px;
-            margin-left:auto;
-            margin-right:auto;
-            margin-top:8px;
-            margin-bottom:8px;
-        }
     </style>
     <script src="https://unpkg.com/@ruffle-rs/ruffle"></script>
 </head>
 <body>
     <div class="header">
-        <div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
-            ReviveTube</span></div>
+        <a href="/" style="text-decoration: none;"><div class="logo"><img src="../favicon.ico" style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;">
+            <span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">ReviveTube</span>
+        </div>
+        </a>
         <div class="search-container">
             <form action="/" method="get">
                 <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
@@ -142,48 +97,43 @@
         </div>
     </div>
     <div class="content">
-<div id="videooutline">
-    <div class="video-container">
-        <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
-            <param name="wmode" value="transparent">
-            <param name="allowFullScreen" value="false">
-            <param name="flashvars" value="filename={{ video_flv }}">
-        </object>
-    </div>
-</div>
-        <h1 style="color:#FFF;">
-            {{ title }}</h1>
-            <hr>
-        <h3 class="dataname">Uploader: <a href="/channel?channel_id={{ channelId }}">
-            {{ uploader }}</a></h3>
-        <p><strong class="dataname">Views:</strong> <b style="color:#FFF;">
-            {{ viewCount }}</b></p>
-        <p><strong class="dataname">Likes:</strong> <b style="color:#FFF;">
-            {{ likeCount }}</b></p>
-        <p><strong class="dataname">Upload Date:</strong> <b style="color:#FFF;">
-            {{ publishedAt }}</b></p>
-        <a href="#comments">Skip Description</a>
-        <h3>Description:</h3>
-        <p>
-            {{ description | safe }}</p>
-            <hr>
-        <h3 class="comments" id="comments" style=" padding-top:3px; padding-bottom:8px; text-align:center">
-            Comments:</h3>
-        <div class="comments" style="text-align:center">
-            {% if comments %}
-            {% for comment in comments %}
-            <div class="comment">
-                <p><strong>{{ comment.author }}</strong> posted:</p>
-                <p>{{ comment.text|safe }}</p>
-                <p style="color: gray; font-size: 12px;">Likes: {{ comment.likeCount }} | Post date: {{ comment.publishedAt }}</p>
+        <div id="videooutline">
+            <div class="video-container">
+                <object data="/player.swf" height="256" type="application/x-shockwave-flash" width="384">
+                    <param name="wmode" value="transparent">
+                    <param name="allowFullScreen" value="false">
+                    <param name="flashvars" value="filename={{ video_flv }}">
+                </object>
             </div>
-            {% endfor %}
-            {% else %}
-            <p>No Comments.</p>
-            {% endif %}
         </div>
-    </div>
-
-    <hr>
+        <div class="container">
+            <h1 class="video-title">{{ title }}</h1>
+            <div class="video-meta">{{ viewCount }} Aufrufe • {{ publishedAt }}</div>
+            <div class="channel-info">
+                <img src="{{ channel_logo_url }}" alt="Channel Logo" class="channel-logo">
+                <div>
+                    <a href="/channel?channel_id={{ channelId }}">{{ uploader }}</a>
+                    <div class="subscriber-count">{{ subscriberCount }} Abonnenten</div>
+                </div>
+            </div>
+            <div class="like-container">
+                <img src="/static/like.png" alt="Like" class="like-image">
+                <span>{{ likeCount }}</span>
+            </div>
+            <div class="comments-section">
+                <h2>Kommentare ({{ commentCount }})</h2>
+                {% if comments %}
+                    {% for comment in comments %}
+                        <div class="comment">
+                            <div class="comment-author">{{ comment.author }}</div>
+                            <div class="comment-text">{{ comment.text }}</div>
+                            <div class="comment-likes">👍 {{ comment.likeCount }} | {{ comment.publishedAt }}</div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <p>Keine Kommentare.</p>
+                {% endif %}
+            </div>
+        </div>
 </body>
 </html>
