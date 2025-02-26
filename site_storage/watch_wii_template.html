@@ -145,12 +145,12 @@
         </div>
         <div class="container">
             <h1 class="video-title">{{ title }}</h1>
-            <div class="video-meta">{{ viewCount }} Aufrufe • {{ publishedAt }}</div>
+            <div class="video-meta">{{ viewCount }} Views • {{ publishedAt }}</div>
             <div class="channel-info">
                 <img src="{{ channel_logo_url }}" alt="Channel Logo" class="channel-logo">
                 <div>
                     <a href="/channel?channel_id={{ channelId }}">{{ uploader }}</a>
-                    <div class="subscriber-count">{{ subscriberCount }} Abonnenten</div>
+                    <div class="subscriber-count">{{ subscriberCount }} Subscribers</div>
                 </div>
             </div>
             <div class="like-container">
@@ -158,7 +158,7 @@
                 <span>{{ likeCount }}</span>
             </div>
             <div class="comments-section">
-                <h2>Kommentare ({{ commentCount }})</h2>
+                <h2>Comments ({{ commentCount }})</h2>
                 {% if comments %}
                     {% for comment in comments %}
                         <div class="comment">
@@ -168,7 +168,7 @@
                         </div>
                     {% endfor %}
                 {% else %}
-                    <p>Keine Kommentare.</p>
+                    <p>No Comments ):</p>
                 {% endif %}
             </div>
         </div>
