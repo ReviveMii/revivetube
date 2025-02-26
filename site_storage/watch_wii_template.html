@@ -128,10 +128,14 @@
 </head>
 <body>
     <div class="header">
-        <a href="/" class="logo">
-            <img src="../favicon.ico" alt="Logo">
-            <span>ReviveTube</span>
-        </a>
+        <a href="/" style="text-decoration: none;"><div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
+            ReviveTube</span></div></a>
+        <div class="search-container">
+            <form action="/" method="get">
+                <input class="search-bar" name="query" placeholder="Search YouTube" type="text">
+                <input type="submit" class="search-button" value="Search">
+            </form>
+        </div>
     </div>
     <div class="content">
         <div id="videooutline">
