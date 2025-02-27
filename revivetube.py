@@ -253,7 +253,6 @@ def watch():
     except Exception as e:
         print(f"SuperPlayCounts API Error: {str(e)}")
 
-    # Anzahl der Kommentare
     comment_count = len(comments)
 
     if os.path.exists(video_mp4_path):
