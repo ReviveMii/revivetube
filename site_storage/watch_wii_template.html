@@ -207,7 +207,7 @@
                     {% for comment in comments %}
                         <div class="comment">
                             <div class="comment-author">{{ comment.author }}</div>
-                            <div class="comment-text">{{ comment.text }}</div>
+                            <div class="comment-text">{{ comment.text | safe}}</div>
                             <div class="comment-likes">👍 {{ comment.likeCount }} | {{ comment.publishedAt }}</div>
                         </div>
                     {% endfor %}
