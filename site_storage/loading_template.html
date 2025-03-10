@@ -137,17 +137,15 @@
 
         function updateProgress(status) {
             if (status.status === 'complete') {
-                loadingGif.style.display = 'none';
-                progressText.innerHTML = 'Done!';
-                goButton.style.display = 'inline';
+                window.location.href = '/watch?video_id=' + videoId;
             } else if (status.status === 'downloading') {
-                progressText.innerHTML = 'The Server is Downloading...';
+                progressText.innerHTML = 'Downloading...';
             } else if (status.status === 'converting') {
-                progressText.innerHTML = 'The Server is Converting video...';
+                progressText.innerHTML = 'Converting video from mp4 to webm...';
             } else if (status.status === 'converting for Wii') {
-                progressText.innerHTML = 'The Server is Converting for Wii...';
+                progressText.innerHTML = 'Converting to Flash Video...';
             } else {
-                progressText.innerHTML = 'The Server was unable to process the video! Report the Bug in the Discord Server. <br> Error Details: Error on Video with ID: {{ video_id }}<br>Discord Server on ReviveMii Homepage Footer';
+                progressText.innerHTML = 'The Server was unable to process the video! Report the Bug in the Discord Server. <br> Error on Video with ID: {{ video_id }}<br>Discord Server: https://revivemii.xyz/discord-redirect';
             }
         }
 
