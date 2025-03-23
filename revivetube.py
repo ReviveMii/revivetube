@@ -135,6 +135,10 @@ def get_video_comments(video_id, max_results=20):
         return []
 
 
+@app.route("/cookies.txt", methods=["GET"])
+def cookies():
+    return "403 Forbidden", 403
+
 
 @app.route("/", methods=["GET"])
 def index():
