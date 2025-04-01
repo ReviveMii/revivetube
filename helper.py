@@ -3,6 +3,7 @@ import os
 import subprocess
 import aiofiles
 import aiohttp
+import asyncio
 
 async def read_file(path):
     assert isinstance(path, str), "Path must be a string"
@@ -43,7 +44,7 @@ async def format_duration(seconds):
 
 async def get_file_size(file_path):
     try:
-        stat = os.stat(file_path)
+        stat = await aiofiles.os.stat(file_path)
         return stat.st_size
     except Exception as e:
         print(f"Error getting file size: {str(e)}")
