@@ -26,14 +26,13 @@ import yt_dlp
 from bs4 import BeautifulSoup
 from quart import Quart, request, render_template_string, send_file, Response, abort, jsonify
 from helper import (
-    read_file as async_read_file,
-    get_video_duration_from_file as async_get_video_duration,
-    format_duration as async_format_duration,
-    get_file_size as async_get_file_size,
-    get_range as async_get_range,
-    get_api_key as async_get_api_key
+    read_file,
+    get_video_duration_from_file,
+    format_duration,
+    get_file_size,
+    get_range,
+    get_api_key
 )
-
 app = Quart(__name__)
 
 VIDEO_FOLDER = "sigma/videos"
