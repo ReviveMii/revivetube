@@ -2,3 +2,6 @@ Flask
 Requests
 yt_dlp
 bs4
+quart
+aiohttp
+aiofiles
