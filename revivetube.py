@@ -86,14 +86,15 @@ async def get_thumbnail(video_id):
         async with aiohttp.ClientSession() as session:
             async with session.get(thumbnail_url) as response:
                 if response.status == 200:
-                    return await send_file(
-                        response.content,
-                        mimetype=response.headers.get("Content-Type", "image/jpeg"),
-                        as_attachment=False,
+                    image_data = await response.read()
+                    return Response(
+                        image_data,
+                        mimetype=response.headers.get("Content-Type", "image/jpeg")
                     )
-                return f"Failed to fetch thumbnail. Status: {response.status}", 500
-    except aiohttp.ClientError as e:
-        return f"Error fetching thumbnail: {str(e)}", 500
+                return "Thumbnail not found", 404
+    except Exception as e:
+        print(f"Error fetching thumbnail: {str(e)}")
+        return "Internal server error", 500
 
 async def get_video_comments(video_id, max_results=20):
     api_key = await get_api_key()
