@@ -18,21 +18,13 @@ import os
 import shutil
 import subprocess
 import tempfile
-import time
 import aiofiles
 import aiohttp
 import asyncio
 import yt_dlp
 from bs4 import BeautifulSoup
 from quart import Quart, request, render_template_string, send_file, Response, abort, jsonify
-from helper import (
-    read_file,
-    get_video_duration_from_file,
-    format_duration,
-    get_file_size,
-    get_range,
-    get_api_key
-)
+
 app = Quart(__name__)
 
 VIDEO_FOLDER = "sigma/videos"
@@ -89,7 +81,6 @@ def get_folder_size(path):
 @app.route("/thumbnail/<video_id>")
 async def get_thumbnail(video_id):
     thumbnail_url = f"https://img.youtube.com/vi/{video_id}/hqdefault.jpg"
-
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(thumbnail_url) as response:
@@ -99,14 +90,12 @@ async def get_thumbnail(video_id):
                         mimetype=response.headers.get("Content-Type", "image/jpeg"),
                         as_attachment=False,
                     )
-                else:
-                    return f"Failed to fetch thumbnail. Status: {response.status}", 500
+                return f"Failed to fetch thumbnail. Status: {response.status}", 500
     except aiohttp.ClientError as e:
         return f"Error fetching thumbnail: {str(e)}", 500
 
 async def get_video_comments(video_id, max_results=20):
-    api_key = await helper.get_api_key()
-
+    api_key = await get_api_key()
     params = {
         "part": "snippet",
         "videoId": video_id,
@@ -114,13 +103,11 @@ async def get_video_comments(video_id, max_results=20):
         "maxResults": max_results,
         "order": "relevance"
     }
-
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get("https://www.googleapis.com/youtube/v3/commentThreads", params=params, timeout=3) as response:
                 response.raise_for_status()
                 data = await response.json()
-
                 comments = []
                 if "items" in data:
                     for item in data["items"]:
@@ -131,9 +118,7 @@ async def get_video_comments(video_id, max_results=20):
                             "likeCount": snippet.get("likeCount", 0),
                             "publishedAt": snippet["publishedAt"]
                         })
-
                 return comments
-
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         print(f"Can't fetch Comments: {str(e)}")
         return []
@@ -154,61 +139,54 @@ async def nohup():
 async def index():
     query = request.args.get("query")
     results = None
-
     try:
         async with aiohttp.ClientSession() as session:
-            if query:
-                url = f"https://invidious.materialio.us/api/v1/search?q={query}"
-            else:
-                url = "https://invidious.materialio.us/api/v1/trending"
-            
+            url = f"https://invidious.materialio.us/api/v1/search?q={query}" if query else "https://invidious.materialio.us/api/v1/trending"
             async with session.get(url, timeout=3) as response:
                 data = await response.json()
+                if response.status == 200 and isinstance(data, list):
+                    if query:
+                        results = []
+                        for entry in data:
+                            if entry.get("type") == "video":
+                                results.append({
+                                    "type": "video",
+                                    "id": entry.get("videoId"),
+                                    "title": entry.get("title"),
+                                    "uploader": entry.get("author", "Unknown"),
+                                    "thumbnail": f"/thumbnail/{entry['videoId']}",
+                                    "viewCount": entry.get("viewCountText", "Unknown"),
+                                    "published": entry.get("publishedText", "Unknown"),
+                                    "duration": await format_duration(entry.get("lengthSeconds", 0))
+                                })
+                            elif entry.get("type") == "channel":
+                                results.append({
+                                    "type": "channel",
+                                    "id": entry.get("authorId"),
+                                    "title": entry.get("author"),
+                                    "thumbnail": entry.get("authorThumbnails")[-1]["url"] if entry.get("authorThumbnails") else "/static/default_channel_thumbnail.jpg",
+                                    "subCount": entry.get("subCount", "Unknown"),
+                                    "videoCount": entry.get("videoCount", "Unknown")
+                                })
+                        return await render_template_string(SEARCH_TEMPLATE, results=results)
+                    else:
+                        results = [
+                            {
+                                "id": entry.get("videoId"),
+                                "title": entry.get("title"),
+                                "uploader": entry.get("author", "Unknown"),
+                                "thumbnail": f"/thumbnail/{entry['videoId']}",
+                                "viewCount": entry.get("viewCountText", "Unknown"),
+                                "published": entry.get("publishedText", "Unknown"),
+                                "duration": await format_duration(entry.get("lengthSeconds", 0))
+                            }
+                            for entry in data
+                            if entry.get("videoId")
+                        ]
+                        return await render_template_string(INDEX_TEMPLATE, results=results)
     except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as e:
         return "Can't parse Data. If this Issue persists, report it in the Discord Server.", 500
-
-    if response.status == 200 and isinstance(data, list):
-        if query:
-            results = []
-            for entry in data:
-                if entry.get("type") == "video":
-                    results.append({
-                        "type": "video",
-                        "id": entry.get("videoId"),
-                        "title": entry.get("title"),
-                        "uploader": entry.get("author", "Unknown"),
-                        "thumbnail": f"/thumbnail/{entry['videoId']}",
-                        "viewCount": entry.get("viewCountText", "Unknown"),
-                        "published": entry.get("publishedText", "Unknown"),
-                        "duration": await helper.format_duration(entry.get("lengthSeconds", 0))
-                    })
-                elif entry.get("type") == "channel":
-                    results.append({
-                        "type": "channel",
-                        "id": entry.get("authorId"),
-                        "title": entry.get("author"),
-                        "thumbnail": entry.get("authorThumbnails")[-1]["url"] if entry.get("authorThumbnails") else "/static/default_channel_thumbnail.jpg",
-                        "subCount": entry.get("subCount", "Unknown"),
-                        "videoCount": entry.get("videoCount", "Unknown")
-                    })
-            return await render_template_string(SEARCH_TEMPLATE, results=results)
-        else:
-            results = [
-                {
-                    "id": entry.get("videoId"),
-                    "title": entry.get("title"),
-                    "uploader": entry.get("author", "Unknown"),
-                    "thumbnail": f"/thumbnail/{entry['videoId']}",
-                    "viewCount": entry.get("viewCountText", "Unknown"),
-                    "published": entry.get("publishedText", "Unknown"),
-                    "duration": await helper.format_duration(entry.get("lengthSeconds", 0))
-                }
-                for entry in data
-                if entry.get("videoId")
-            ]
-            return await render_template_string(INDEX_TEMPLATE, results=results)
-    else:
-        return "No Results or Error in the API.", 404
+    return "No Results or Error in the API.", 404
 
 @app.route("/watch", methods=["GET"])
 async def watch():
@@ -235,30 +213,21 @@ async def watch():
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         return f"Can't connect to Metadata-API: {str(e)}", 500
 
-    comments = []
-    try:
-        comments = await get_video_comments(video_id)
-    except Exception as e:
-        print(f"Video-Comments Error: {str(e)}")
-        comments = []
-
+    comments = await get_video_comments(video_id)
     channel_logo_url = ""
     subscriber_count = "Unbekannt"
+    
     try:
         channel_id = metadata['channelId']
-        api_url = f"https://api-superplaycounts.onrender.com/api/youtube-channel-counter/user/{channel_id}"
         async with aiohttp.ClientSession() as session:
-            async with session.get(api_url, timeout=5) as channel_response:
+            async with session.get(f"https://api-superplaycounts.onrender.com/api/youtube-channel-counter/user/{channel_id}", timeout=5) as channel_response:
                 if channel_response.status == 200:
                     channel_data = await channel_response.json()
-
                     for stat in channel_data.get("statistics", []):
                         for count in stat.get("counts", []):
                             if count.get("value") == "subscribers":
                                 subscriber_count = count.get("count", "Unbekannt")
                                 break
-
-                    for stat in channel_data.get("statistics", []):
                         for user_info in stat.get("user", []):
                             if user_info.get("value") == "pfp":
                                 channel_logo_url = user_info.get("count", "").replace("https://", "http://")
@@ -269,33 +238,13 @@ async def watch():
     comment_count = len(comments)
 
     if os.path.exists(video_mp4_path):
-        video_duration = await helper.get_video_duration_from_file(video_flv_path)
+        video_duration = await get_video_duration_from_file(video_flv_path)
         alert_script = ""
         if video_duration > 420:
-            alert_script = """
-            <script type="text/javascript">
-                alert("This Video is long. There is a chance that the Wii will not play the Video. Try a Video under 5 minutes.");
-            </script>
-            """
+            alert_script = """<script type="text/javascript">alert("This Video is long. There is a chance that the Wii will not play the Video. Try a Video under 5 minutes.");</script>"""
 
         if is_wii and os.path.exists(video_flv_path):
             return await render_template_string(WATCH_WII_TEMPLATE + alert_script,
-                                      title=metadata['title'],
-                                      uploader=metadata['uploader'],
-                                      channelId=metadata['channelId'],
-                                      description=metadata['description'].replace("\n", "<br>"),
-                                      viewCount=metadata['viewCount'],
-                                      likeCount=metadata['likeCount'],
-                                      publishedAt=metadata['publishedAt'],
-                                      comments=comments,
-                                      commentCount=comment_count,
-                                      channel_logo_url=channel_logo_url,
-                                      subscriberCount=subscriber_count,
-                                      video_id=video_id,
-                                      video_flv=f"/sigma/videos/{video_id}.flv",
-                                      alert_message="")
-
-        return await render_template_string(WATCH_WII_TEMPLATE,
                                   title=metadata['title'],
                                   uploader=metadata['uploader'],
                                   channelId=metadata['channelId'],
@@ -311,6 +260,22 @@ async def watch():
                                   video_flv=f"/sigma/videos/{video_id}.flv",
                                   alert_message="")
 
+        return await render_template_string(WATCH_WII_TEMPLATE,
+                              title=metadata['title'],
+                              uploader=metadata['uploader'],
+                              channelId=metadata['channelId'],
+                              description=metadata['description'].replace("\n", "<br>"),
+                              viewCount=metadata['viewCount'],
+                              likeCount=metadata['likeCount'],
+                              publishedAt=metadata['publishedAt'],
+                              comments=comments,
+                              commentCount=comment_count,
+                              channel_logo_url=channel_logo_url,
+                              subscriberCount=subscriber_count,
+                              video_id=video_id,
+                              video_flv=f"/sigma/videos/{video_id}.flv",
+                              alert_message="")
+
     if not os.path.exists(video_mp4_path):
         if video_status[video_id]["status"] == "processing":
             asyncio.create_task(process_video(video_id))
@@ -321,18 +286,16 @@ async def process_video(video_id):
     video_flv_path = os.path.join(VIDEO_FOLDER, f"{video_id}.flv")
     try:
         video_status[video_id] = {"status": "downloading"}
-
         with tempfile.TemporaryDirectory() as temp_dir:
             temp_video_path = os.path.join(temp_dir, f"{video_id}.%(ext)s")
-            command = [
+            subprocess.run([
                 "yt-dlp",
                 "-o", temp_video_path,
                 "--cookies", "cookies.txt",
                 "--proxy", "http://localhost:4000",                
                 "-f", "worstvideo+worstaudio",
                 f"https://youtube.com/watch?v={video_id}"
-            ]
-            subprocess.run(command, check=True)
+            ], check=True)
 
             downloaded_files = [f for f in os.listdir(temp_dir) if video_id in f]
             if not downloaded_files:
@@ -340,49 +303,42 @@ async def process_video(video_id):
                 return
 
             downloaded_file = os.path.join(temp_dir, downloaded_files[0])
-
             if not downloaded_file.endswith(".mp4"):
                 video_status[video_id] = {"status": "converting"}
-                subprocess.run(
-                    [
-                        "ffmpeg",
-                        "-y",
-                        "-i", downloaded_file,
-                        "-c:v", "libx264",
-                        "-crf", "51",
-                        "-c:a", "aac",
-                        "-strict", "experimental",
-                        "-preset", "ultrafast",
-                        "-b:a", "64k",
-                        "-movflags", "+faststart",
-                        "-vf", "scale=854:480",
-                        video_mp4_path
-                    ],
-                    check=True
-                )
+                subprocess.run([
+                    "ffmpeg",
+                    "-y",
+                    "-i", downloaded_file,
+                    "-c:v", "libx264",
+                    "-crf", "51",
+                    "-c:a", "aac",
+                    "-strict", "experimental",
+                    "-preset", "ultrafast",
+                    "-b:a", "64k",
+                    "-movflags", "+faststart",
+                    "-vf", "scale=854:480",
+                    video_mp4_path
+                ], check=True)
             else:
                 shutil.copy(downloaded_file, video_mp4_path)
 
         if not os.path.exists(video_flv_path):
             video_status[video_id] = {"status": "converting for Wii"}
-            subprocess.run(
-                [
-                    "ffmpeg",
-                    "-y",
-                    "-i", video_mp4_path,
-                    "-ar", "22050",
-                    "-f", "flv",
-                    "-s", "320x240",
-                    "-ab", "32k",
-                    "-preset", "ultrafast",
-                    "-crf", "51",
-                    "-filter:v", "fps=fps=15",
-                    video_flv_path
-                ],
-                check=True)
+            subprocess.run([
+                "ffmpeg",
+                "-y",
+                "-i", video_mp4_path,
+                "-ar", "22050",
+                "-f", "flv",
+                "-s", "320x240",
+                "-ab", "32k",
+                "-preset", "ultrafast",
+                "-crf", "51",
+                "-filter:v", "fps=fps=15",
+                video_flv_path
+            ], check=True)
 
         video_status[video_id] = {"status": "complete", "url": f"/sigma/videos/{video_id}.mp4"}
-
     except Exception as e:
         video_status[video_id] = {"status": "error", "message": str(e)}
 
@@ -392,56 +348,40 @@ async def check_status(video_id):
 
 @app.route("/video_metadata/<video_id>")
 async def video_metadata(video_id):
-    api_key = await helper.get_api_key()
-
+    api_key = await get_api_key()
     params = {
         "part": "snippet,statistics",
         "id": video_id,
         "key": api_key
     }
-
     try:
         async with aiohttp.ClientSession() as session:
             async with session.get(YOUTUBE_API_URL, params=params, timeout=1) as response:
                 response.raise_for_status()
                 data = await response.json()
-
                 if "items" not in data or len(data["items"]) == 0:
                     return f"The Video with ID {video_id} was not found.", 404
-
                 video_data = data["items"][0]
-                title = video_data["snippet"]["title"]
-                description = video_data["snippet"]["description"]
-                uploader = video_data["snippet"]["channelTitle"]
-                channel_id = video_data["snippet"]["channelId"]
-                view_count = video_data["statistics"].get("viewCount", "Unknown")
-                like_count = video_data["statistics"].get("likeCount", "Unknown")
-                dislike_count = video_data["statistics"].get("dislikeCount", "Unknown")
-                published_at = video_data["snippet"].get("publishedAt", "Unknown")
-
                 return {
-                    "title": title,
-                    "uploader": uploader,
-                    "channelId": channel_id,
-                    "description": description,
-                    "viewCount": view_count,
-                    "likeCount": like_count,
-                    "dislikeCount": dislike_count,
-                    "publishedAt": published_at
+                    "title": video_data["snippet"]["title"],
+                    "uploader": video_data["snippet"]["channelTitle"],
+                    "channelId": video_data["snippet"]["channelId"],
+                    "description": video_data["snippet"]["description"],
+                    "viewCount": video_data["statistics"].get("viewCount", "Unknown"),
+                    "likeCount": video_data["statistics"].get("likeCount", "Unknown"),
+                    "dislikeCount": video_data["statistics"].get("dislikeCount", "Unknown"),
+                    "publishedAt": video_data["snippet"].get("publishedAt", "Unknown")
                 }
-
     except (aiohttp.ClientError, asyncio.TimeoutError) as e:
         return f"API Error: {str(e)}", 500
 
 @app.route("/<path:filename>")
 async def serve_video(filename):
     file_path = os.path.join(filename)
-
     if not os.path.exists(file_path):
         return "File not found.", 404
 
-    file_size = await helper.get_file_size(file_path)
-
+    file_size = await get_file_size(file_path)
     range_header = request.headers.get('Range', None)
     if range_header:
         byte_range = range_header.strip().split('=')[1]
@@ -452,7 +392,7 @@ async def serve_video(filename):
         if start_byte >= file_size or end_byte >= file_size:
             abort(416)
 
-        data = await helper.get_range(file_path, (start_byte, end_byte))
+        data = await get_range(file_path, (start_byte, end_byte))
         content_range = f"bytes {start_byte}-{end_byte}/{file_size}"
 
         response = Response(
@@ -470,7 +410,6 @@ async def serve_video(filename):
 @app.route('/channel', methods=['GET'])
 async def channel_m():
     channel_id = request.args.get('channel_id', None)
-
     if not channel_id:
         return "Channel ID is required.", 400
 
@@ -479,35 +418,24 @@ async def channel_m():
         'extract_flat': True,
         'playlistend': 20,
     }
-
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            url = f"https://www.youtube.com/channel/{channel_id}/videos"
-            info = ydl.extract_info(url, download=False)
-
+            info = ydl.extract_info(f"https://www.youtube.com/channel/{channel_id}/videos", download=False)
             if 'entries' not in info:
                 return "No videos found.", 404
-
             channel_name = info.get('uploader', 'Unknown')
 
         async with aiohttp.ClientSession() as session:
-            invidious_url = f"https://invidious.materialio.us/channel/{channel_id}"
-            async with session.get(invidious_url, timeout=10) as response:
+            async with session.get(f"https://invidious.materialio.us/channel/{channel_id}", timeout=10) as response:
                 if response.status != 200:
                     return "Failed to fetch channel page.", 500
-
-                html = await response.text()
-                soup = BeautifulSoup(html, "html.parser")
+                soup = BeautifulSoup(await response.text(), "html.parser")
                 profile_div = soup.find(class_="channel-profile")
-
+                channel_picture = ""
                 if profile_div:
                     img_tag = profile_div.find("img")
                     if img_tag and "src" in img_tag.attrs:
-                        channel_picture = "http://api.allorigins.win/raw?url=http://invidious.materialio.us" + img_tag["src"]
-                    else:
-                        channel_picture = ""
-                else:
-                    channel_picture = ""
+                        channel_picture = f"http://api.allorigins.win/raw?url=http://invidious.materialio.us{img_tag['src']}"
 
                 results = [
                     {
@@ -519,14 +447,12 @@ async def channel_m():
                     }
                     for video in info['entries']
                 ]
-
                 return await render_template_string(
                     CHANNEL_TEMPLATE,
                     results=results,
                     channel_name=channel_name,
                     channel_picture=channel_picture
                 )
-
     except Exception as e:
         return f"An error occurred: {str(e)}", 500
 
