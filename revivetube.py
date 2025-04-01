@@ -54,7 +54,9 @@ async def check_and_create_folder():
             print(f"Folder {folder_path} got created.")
         await asyncio.sleep(10)
 
-app.before_serving(lambda: asyncio.create_task(check_and_create_folder()))
+@app.before_serving
+async def startup():
+    asyncio.create_task(check_and_create_folder())
 
 LOADING_TEMPLATE = None
 CHANNEL_TEMPLATE = None
