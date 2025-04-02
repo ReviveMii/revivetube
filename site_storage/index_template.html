@@ -88,7 +88,7 @@
 <body>
     <div class="header">
         <a href="/" style="text-decoration: none;"><div class="logo"><img src="../favicon.ico"  style="width:32px; height:32px; display:inline; position:relative; top:3px; right:3px; padding-right:2px;"><span style="position:relative; top:-4px; padding-left:5px; border-left:1px solid #323232;">
-            RickrollTube</span></div></a>
+            ReviveTube</span></div></a>
         <div class="search-container">
             <form action="/" method="get">
                 <input class="search-bar" placeholder="Search YouTube" name="query" type="text">
@@ -97,7 +97,7 @@
         </div>
     </div>
     <div class="content">
-        <!-- <div style="background-color: lightblue; border-radius: 25px; padding: 20px;">
+       <!--  <div style="background-color: lightblue; border-radius: 25px; padding: 20px;">
         <h1>We now have a Wii Forwarder for ReviveTube!</h1>
         <a href="https://go.revivemii.xyz/revivetube-forwarder.html">Click here (Open this on a Modern Device)</a>
         </div> -->
@@ -105,12 +105,12 @@
         <div class="video-grid">
             {% for video in results %}
             <div class="video-item">
-                <a href="/watch?video_id=dQw4w9WgXcQ">
-                    <img alt="Haha Rickroll" src="/thumbnail/dQw4w9WgXcQ">
+                <a href="/watch?video_id={{ video['id'] }}">
+                    <img alt="{{ video['title'] }}" src="{{ video['thumbnail'] }}">
                 </a>
-                <div class="video-item-title">Rick Astley - Never gonna give you up (Official Music Video)</div>
-                <div class="video-item-uploader">By: Rick Astley</div>
-                <div class="video-item-duration">Duration: 3:33</div>
+                <div class="video-item-title">{{ video['title'] }}</div>
+                <div class="video-item-uploader">By: {{ video['uploader'] }}</div>
+                <div class="video-item-duration">Duration: {{ video['duration'] }}</div>
             </div>
             {% endfor %}
         </div>
