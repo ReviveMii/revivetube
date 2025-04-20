@@ -286,63 +286,91 @@ async def watch():
 async def process_video(video_id):
     video_mp4_path = os.path.join(VIDEO_FOLDER, f"{video_id}.mp4")
     video_flv_path = os.path.join(VIDEO_FOLDER, f"{video_id}.flv")
+    
     try:
         video_status[video_id] = {"status": "downloading"}
-        with tempfile.TemporaryDirectory() as temp_dir:
-            temp_video_path = os.path.join(temp_dir, f"{video_id}.%(ext)s")
+        temp_dir = tempfile.mkdtemp()
+        
+        try:
             subprocess.run([
                 "yt-dlp",
-                "-o", temp_video_path,
+                "-o", os.path.join(temp_dir, f"{video_id}.%(ext)s"),
                 "--cookies", "cookies.txt",
-                "--proxy", "http://localhost:4000",                
+                "--proxy", "http://localhost:4000",
                 "-f", "worstvideo+worstaudio",
                 f"https://youtube.com/watch?v={video_id}"
             ], check=True)
 
             downloaded_files = [f for f in os.listdir(temp_dir) if video_id in f]
             if not downloaded_files:
-                video_status[video_id] = {"status": "error", "message": "Error downloading."}
-                return
+                raise Exception("No video file downloaded")
 
             downloaded_file = os.path.join(temp_dir, downloaded_files[0])
+            
             if not downloaded_file.endswith(".mp4"):
                 video_status[video_id] = {"status": "converting"}
-                subprocess.run([
-                    "ffmpeg",
-                    "-y",
-                    "-i", downloaded_file,
-                    "-c:v", "libx264",
-                    "-crf", "51",
-                    "-c:a", "aac",
-                    "-strict", "experimental",
-                    "-preset", "ultrafast",
-                    "-b:a", "64k",
-                    "-movflags", "+faststart",
-                    "-vf", "scale=854:480",
-                    video_mp4_path
-                ], check=True)
+                try:
+                    subprocess.run([
+                        "ffmpeg",
+                        "-y",
+                        "-i", downloaded_file,
+                        "-c:v", "libx264",
+                        "-crf", "51",
+                        "-c:a", "aac",
+                        "-strict", "experimental",
+                        "-preset", "ultrafast",
+                        "-b:a", "64k",
+                        "-movflags", "+faststart",
+                        "-vf", "scale=854:480",
+                        video_mp4_path
+                    ], check=True, timeout=300, stderr=subprocess.PIPE)
+                except subprocess.TimeoutExpired:
+                    raise Exception("MP4 conversion timed out")
+                except subprocess.CalledProcessError as e:
+                    error_output = e.stderr.decode('utf-8') if e.stderr else str(e)
+                    raise Exception(f"MP4 conversion failed: {error_output}")
             else:
                 shutil.copy(downloaded_file, video_mp4_path)
 
-        if not os.path.exists(video_flv_path):
-            video_status[video_id] = {"status": "converting for Wii"}
-            subprocess.run([
-                "ffmpeg",
-                "-y",
-                "-i", video_mp4_path,
-                "-ar", "22050",
-                "-f", "flv",
-                "-s", "320x240",
-                "-ab", "32k",
-                "-preset", "ultrafast",
-                "-crf", "51",
-                "-filter:v", "fps=fps=15",
-                video_flv_path
-            ], check=True)
+            if not os.path.exists(video_flv_path):
+                video_status[video_id] = {"status": "converting for Wii"}
+                try:
+                    subprocess.run([
+                        "ffmpeg",
+                        "-y",
+                        "-i", video_mp4_path,
+                        "-ar", "22050",
+                        "-f", "flv",
+                        "-s", "320x240",
+                        "-ab", "32k",
+                        "-preset", "ultrafast",
+                        "-crf", "51",
+                        "-filter:v", "fps=fps=15",
+                        video_flv_path
+                    ], check=True, timeout=300, stderr=subprocess.PIPE)
+                except subprocess.TimeoutExpired:
+                    raise Exception("FLV conversion timed out")
+                except subprocess.CalledProcessError as e:
+                    error_output = e.stderr.decode('utf-8') if e.stderr else str(e)
+                    raise Exception(f"FLV conversion failed: {error_output}")
 
-        video_status[video_id] = {"status": "complete", "url": f"/sigma/videos/{video_id}.mp4"}
+            video_status[video_id] = {"status": "complete", "url": f"/sigma/videos/{video_id}.mp4"}
+            
+        finally:
+            try:
+                shutil.rmtree(temp_dir)
+            except:
+                pass
+                
     except Exception as e:
-        video_status[video_id] = {"status": "error", "message": str(e)}
+        error_msg = str(e)
+        video_status[video_id] = {"status": "error", "message": error_msg}
+        for path in [video_mp4_path, video_flv_path]:
+            try:
+                if os.path.exists(path):
+                    os.remove(path)
+            except:
+                pass
 
 @app.route("/status/<video_id>")
 async def check_status(video_id):
