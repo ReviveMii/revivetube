@@ -143,7 +143,7 @@ async def index():
     results = None
     try:
         async with aiohttp.ClientSession() as session:
-            url = f"https://invidious.materialio.us/api/v1/search?q={query}" if query else "https://invidious.materialio.us/api/v1/trending"
+            url = f"https://invidious.reallyaweso.me/api/v1/search?q={query}" if query else "https://invidious.reallyaweso.me/api/v1/trending"
             async with session.get(url, timeout=3) as response:
                 data = await response.json()
                 if response.status == 200 and isinstance(data, list):
