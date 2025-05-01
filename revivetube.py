@@ -144,7 +144,7 @@ async def index():
     try:
         async with aiohttp.ClientSession() as session:
             url = f"https://invidious.errexe.xyz/api/v1/search?q={query}" if query else "https://invidious.errexe.xyz/api/v1/trending"
-            async with session.get(url, timeout=3) as response:
+            async with session.get(url, timeout=6) as response:
                 data = await response.json()
                 if response.status == 200 and isinstance(data, list):
                     if query:
