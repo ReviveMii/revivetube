@@ -71,6 +71,23 @@ os.makedirs(VIDEO_FOLDER, exist_ok=True)
 MAX_VIDEO_SIZE = 1 * 1024 * 1024 * 1024
 MAX_FOLDER_SIZE = 5 * 1024 * 1024 * 1024
 
+async def run_subprocess(cmd, timeout=300):
+    loop = asyncio.get_event_loop()
+    def _run():
+        try:
+            result = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+                check=True
+            )
+            return result
+        except Exception as e:
+            return e
+    return await loop.run_in_executor(None, _run)
+
+
 def get_folder_size(path):
     total_size = 0
     for dirpath, dirnames, filenames in os.walk(path):
@@ -217,7 +234,7 @@ async def watch():
 
     comments = await get_video_comments(video_id)
     channel_logo_url = ""
-    subscriber_count = "Unbekannt"
+    subscriber_count = "Unknown"
     
     try:
         channel_id = metadata['channelId']
@@ -286,82 +303,68 @@ async def watch():
 async def process_video(video_id):
     video_mp4_path = os.path.join(VIDEO_FOLDER, f"{video_id}.mp4")
     video_flv_path = os.path.join(VIDEO_FOLDER, f"{video_id}.flv")
-    
+    temp_dir = tempfile.mkdtemp()
+
     try:
         video_status[video_id] = {"status": "downloading"}
-        temp_dir = tempfile.mkdtemp()
-        
-        try:
-            subprocess.run([
-                "yt-dlp",
-                "-o", os.path.join(temp_dir, f"{video_id}.%(ext)s"),
-                "--cookies", "cookies.txt",
-                "--proxy", "http://localhost:4000",
-                "-f", "worstvideo+worstaudio",
-                f"https://youtube.com/watch?v={video_id}"
-            ], check=True)
 
-            downloaded_files = [f for f in os.listdir(temp_dir) if video_id in f]
-            if not downloaded_files:
-                raise Exception("No video file downloaded")
+        ytdlp_cmd = [
+            "yt-dlp",
+            "-o", os.path.join(temp_dir, f"{video_id}.%(ext)s"),
+            "--cookies", "cookies.txt",
+            "-f", "worstvideo+worstaudio",
+            f"https://youtube.com/watch?v={video_id}"
+        ]
+        result = await run_subprocess(ytdlp_cmd)
+        if isinstance(result, Exception):
+            raise result
 
-            downloaded_file = os.path.join(temp_dir, downloaded_files[0])
-            
-            if not downloaded_file.endswith(".mp4"):
-                video_status[video_id] = {"status": "converting"}
-                try:
-                    subprocess.run([
-                        "ffmpeg",
-                        "-y",
-                        "-i", downloaded_file,
-                        "-c:v", "libx264",
-                        "-crf", "51",
-                        "-c:a", "aac",
-                        "-strict", "experimental",
-                        "-preset", "ultrafast",
-                        "-b:a", "64k",
-                        "-movflags", "+faststart",
-                        "-vf", "scale=854:480",
-                        video_mp4_path
-                    ], check=True, timeout=300, stderr=subprocess.PIPE)
-                except subprocess.TimeoutExpired:
-                    raise Exception("MP4 conversion timed out")
-                except subprocess.CalledProcessError as e:
-                    error_output = e.stderr.decode('utf-8') if e.stderr else str(e)
-                    raise Exception(f"MP4 conversion failed: {error_output}")
-            else:
-                shutil.copy(downloaded_file, video_mp4_path)
+        downloaded_files = [f for f in os.listdir(temp_dir) if video_id in f]
+        if not downloaded_files:
+            raise Exception("No video file downloaded")
 
-            if not os.path.exists(video_flv_path):
-                video_status[video_id] = {"status": "converting for Wii"}
-                try:
-                    subprocess.run([
-                        "ffmpeg",
-                        "-y",
-                        "-i", video_mp4_path,
-                        "-ar", "22050",
-                        "-f", "flv",
-                        "-s", "320x240",
-                        "-ab", "32k",
-                        "-preset", "ultrafast",
-                        "-crf", "51",
-                        "-filter:v", "fps=fps=15",
-                        video_flv_path
-                    ], check=True, timeout=300, stderr=subprocess.PIPE)
-                except subprocess.TimeoutExpired:
-                    raise Exception("FLV conversion timed out")
-                except subprocess.CalledProcessError as e:
-                    error_output = e.stderr.decode('utf-8') if e.stderr else str(e)
-                    raise Exception(f"FLV conversion failed: {error_output}")
+        downloaded_file = os.path.join(temp_dir, downloaded_files[0])
 
-            video_status[video_id] = {"status": "complete", "url": f"/sigma/videos/{video_id}.mp4"}
-            
-        finally:
-            try:
-                shutil.rmtree(temp_dir)
-            except:
-                pass
-                
+        if not downloaded_file.endswith(".mp4"):
+            video_status[video_id] = {"status": "converting"}
+            ffmpeg_cmd = [
+                "ffmpeg", "-y",
+                "-i", downloaded_file,
+                "-c:v", "libx264",
+                "-crf", "51",
+                "-c:a", "aac",
+                "-preset", "ultrafast",
+                "-b:a", "64k",
+                "-movflags", "+faststart",
+                "-vf", "scale=854:480",
+                video_mp4_path
+            ]
+            result = await run_subprocess(ffmpeg_cmd)
+            if isinstance(result, Exception):
+                raise result
+        else:
+            shutil.copy(downloaded_file, video_mp4_path)
+
+        if not os.path.exists(video_flv_path):
+            video_status[video_id] = {"status": "converting for Wii"}
+            ffmpeg_flv_cmd = [
+                "ffmpeg", "-y",
+                "-i", video_mp4_path,
+                "-ar", "22050",
+                "-f", "flv",
+                "-s", "320x240",
+                "-ab", "32k",
+                "-preset", "ultrafast",
+                "-crf", "51",
+                "-filter:v", "fps=fps=15",
+                video_flv_path
+            ]
+            result = await run_subprocess(ffmpeg_flv_cmd)
+            if isinstance(result, Exception):
+                raise result
+
+        video_status[video_id] = {"status": "complete", "url": f"/sigma/videos/{video_id}.mp4"}
+
     except Exception as e:
         error_msg = str(e)
         video_status[video_id] = {"status": "error", "message": error_msg}
@@ -371,6 +374,12 @@ async def process_video(video_id):
                     os.remove(path)
             except:
                 pass
+
+    finally:
+        try:
+            shutil.rmtree(temp_dir)
+        except:
+            pass
 
 @app.route("/status/<video_id>")
 async def check_status(video_id):
