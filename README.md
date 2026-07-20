@@ -1,4 +1,4 @@
-# If you are looking for a YouTube Channel Revival click here: https://revivemii.xyz/riivivetube
+# The Web-based YT Frontend is discontinued. If you are looking for a YouTube Channel Revival click here: https://revivemii.xyz/riivivetube or here https://github.com/ReviveMii/riivivetube
 
 # ReviveTube
 
