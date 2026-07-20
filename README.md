@@ -1,3 +1,5 @@
+# If you are looking for a YouTube Channel Revival click here: https://revivemii.xyz/riivivetube
+
 # ReviveTube
 
 Watch YouTube on your Wii!
